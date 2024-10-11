@@ -12,6 +12,7 @@ export default function Calculator( {changeRate}) {
     const [forcedChangeRateValue, setForcedChangeRateValue] = useState(changeRate)
     const [sysMessage, setSysMessage] = useState(null)
     const [conversionResult, setConversionResult] = useState(null)
+    const [changeHistory, setChangehistory] = useState([])
 
     const inputAmount = useRef()
 
@@ -38,6 +39,28 @@ export default function Calculator( {changeRate}) {
         setForcedChangeRateValue(event.target.value)
     }
 
+    const updateChangeHistory = (inputAmount, convertedAmount, changeRate, usedChangeRate, convertionDirection) => {
+        const inputAmountValueFormated = `${inputAmountValue} ${convertionDirection === EUR2USD ? CURRENCY_EUR : CURRENCY_USD}`
+        const convertedAmountValueFormated = `${convertedAmount} ${convertionDirection === EUR2USD ? CURRENCY_USD : CURRENCY_EUR}`
+
+        const historyInput = [
+            inputAmountValueFormated,
+            convertedAmountValueFormated,
+            changeRate,
+            usedChangeRate
+        ]
+
+        setChangehistory(
+            (prevState) => {
+
+                let copyArray = [...prevState]
+                if (copyArray.length >= 5 ) copyArray = copyArray.slice(-4)
+
+                return [...copyArray, historyInput];
+            }
+        )
+    }
+
     const convertCurrencies = event => {
         event.preventDefault();
 
@@ -54,11 +77,12 @@ export default function Calculator( {changeRate}) {
             }
         }
 
-        let result = convertionDirection === EUR2USD ? inputAmountValue * usedChangeRate : inputAmountValue / usedChangeRate
-        result = Math.round( result*100) /100
+        let convertedAmount = convertionDirection === EUR2USD ? inputAmountValue * usedChangeRate : inputAmountValue / usedChangeRate
+        convertedAmount = Math.round( convertedAmount*100) /100
 
+        updateChangeHistory(inputAmountValue, convertedAmount, changeRate, usedChangeRate, convertionDirection )
         setSysMessage(null)
-        setConversionResult(result )
+        setConversionResult(convertedAmount )
 
         if (isChangeRateForced){
             const changeRateRatio = Math.abs((forcedChangeRateValue / changeRate) - 1) * 100
@@ -118,13 +142,13 @@ export default function Calculator( {changeRate}) {
                         onChange={e => handleChangeForcedChangeRate(e)}/>
                 </div>
             </div>
-            { sysMessage &&
-                        <div  >
-                            Warning: <span data-testid="system-message">
+            {sysMessage &&
+                <div>
+                    Warning: <span data-testid="system-message">
                                 {sysMessage}
                             </span>
-                        </div>
-                    }
+                </div>
+            }
             <div>
                 {conversionResult &&
                     <div>
@@ -148,6 +172,34 @@ export default function Calculator( {changeRate}) {
                         </div>
                     </div>
                 }
+            </div>
+            <hr/>
+            <div>
+                <h3>Change history</h3>
+                <table data-testid="table-history">
+                    <thead>
+                    <tr>
+                        <th>Amount</th>
+                        <th>Conversion</th>
+                        <th>Actual rate</th>
+                        <th>Forced rate</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {changeHistory.map(
+                        (historyLine, index) => {
+                            return (
+                                <tr key={index}>
+                                    <td>{historyLine[0]}</td>
+                                    <td>{historyLine[1]}</td>
+                                    <td>{historyLine[2]}</td>
+                                    <td>{historyLine[3]}</td>
+                                </tr>
+                            )
+                        }
+                    )}
+                    </tbody>
+                </table>
             </div>
         </div>
     )
