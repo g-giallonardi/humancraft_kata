@@ -8,6 +8,9 @@ export default function Calculator( {changeRate}) {
 
     const [convertionDirection, setConvertionDirection] = useState(EUR2USD)
     const [inputAmountValue, setInputAmountValue] = useState(1)
+    const [isChangeRateForced,setIsChangeRateForced] = useState(false)
+    const [forcedChangeRateValue, setForcedChangeRateValue] = useState(changeRate)
+
     const [conversionResult, setConversionResult] = useState(null)
 
 
@@ -26,6 +29,15 @@ export default function Calculator( {changeRate}) {
         event.preventDefault();
         setInputAmountValue(inputAmount.current.value >= 0 ? inputAmount.current.value : 0 )
         setConversionResult(null)
+    }
+
+    const handleForcedChangeRateChange = () => {
+        setIsChangeRateForced(prevState => !prevState);
+        setForcedChangeRateValue(changeRate)
+    }
+
+    const handleChangeForcedChangeRate = (event) =>{
+        setForcedChangeRateValue(event.target.value)
     }
 
     const convertCurrencies = event => {
@@ -48,10 +60,10 @@ export default function Calculator( {changeRate}) {
                 <form onSubmit={convertCurrencies}>
                     <div>
                         <input data-testid="input-amount"
-                           type="number"
-                           ref={inputAmount}
-                           onChange={handleChangeInputAmount}
-                           value={inputAmountValue}
+                               type="number"
+                               ref={inputAmount}
+                               onChange={handleChangeInputAmount}
+                               value={inputAmountValue}
                         />
                         <input data-testid="display-swap-currencies" type="text" disabled value={convertionDirection}/>
                         <button
@@ -70,6 +82,26 @@ export default function Calculator( {changeRate}) {
                         </button>
                     </div>
                 </form>
+            </div>
+
+            <div>
+                <label>
+                    Force custom change rate?
+                    <input
+                        data-testid="checkbox-force-change-rate"
+                        type="checkbox"
+                        checked={isChangeRateForced}
+                        onChange={handleForcedChangeRateChange}
+                    />
+                </label>
+                <div>
+                    <input
+                        data-testid="input-forced-change-rate-amount"
+                        type="number"
+                        style={{visibility: isChangeRateForced ? "visible" : "hidden"}}
+                        value={forcedChangeRateValue}
+                        onChange={e => handleChangeForcedChangeRate(e)}/>
+                </div>
             </div>
 
             <div>

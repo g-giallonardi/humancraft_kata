@@ -59,4 +59,14 @@ describe('Calculator', () => {
     fireEvent.click(swapButton);
     expect(screen.getByTestId('display-swap-currencies').value).toBe('USD > EUR');
   });
+
+  it('sets forced rate correctly', () => {
+    const checkbox = screen.getByTestId('checkbox-force-change-rate');
+
+    fireEvent.click(checkbox);
+    expect(screen.getByTestId('input-forced-change-rate-amount').value).toBe(changeRate.toString());
+
+    fireEvent.change(screen.getByTestId('input-forced-change-rate-amount'), { target: { value: '0.8' } });
+    expect(screen.getByTestId('input-forced-change-rate-amount').value).toBe('0.8');
+  });
 });
