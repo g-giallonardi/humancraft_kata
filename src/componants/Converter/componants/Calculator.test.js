@@ -60,7 +60,7 @@ describe('Calculator', () => {
     expect(screen.getByTestId('display-swap-currencies').value).toBe('USD > EUR');
   });
 
-  it('sets forced rate correctly', () => {
+  it('sets custom rate correctly', () => {
     const checkbox = screen.getByTestId('checkbox-force-change-rate');
 
     fireEvent.click(checkbox);
@@ -69,4 +69,34 @@ describe('Calculator', () => {
     fireEvent.change(screen.getByTestId('input-forced-change-rate-amount'), { target: { value: '0.8' } });
     expect(screen.getByTestId('input-forced-change-rate-amount').value).toBe('0.8');
   });
+
+  it('should cancel custom change rate if above 2% of deviation',()=>{
+    const DEFAULTAMOUNT = '10'
+
+    const checkbox = screen.getByTestId('checkbox-force-change-rate');
+    const inputAmount = screen.getByTestId('input-amount');
+    const buttonConversion = screen.getByTestId('button-conversion');
+
+    const extremeChangeRate = changeRate*5
+
+    fireEvent.click(checkbox);
+    expect(screen.getByTestId('input-forced-change-rate-amount').value).toBe(changeRate.toString());
+
+    fireEvent.change(screen.getByTestId('input-forced-change-rate-amount'), { target: { value: (extremeChangeRate.toString()) } });
+    expect(screen.getByTestId('input-forced-change-rate-amount').value).toBe(extremeChangeRate.toString());
+
+    fireEvent.change(inputAmount, {
+      target: {
+        value: DEFAULTAMOUNT,
+      }
+    });
+
+    fireEvent.click(buttonConversion);
+
+    const resultTargetAmount = screen.getByTestId('result-target-amount-convertion');
+    const sysMessage = screen.getByTestId('system-message')
+
+    expect(sysMessage).toHaveTextContent('Custom rate is above 2% deviation. Cancelling forced rate.');
+    expect(resultTargetAmount).toHaveTextContent(parseInt(DEFAULTAMOUNT) * changeRate);
+  })
 });

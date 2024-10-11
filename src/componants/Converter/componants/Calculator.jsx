@@ -10,12 +10,10 @@ export default function Calculator( {changeRate}) {
     const [inputAmountValue, setInputAmountValue] = useState(1)
     const [isChangeRateForced,setIsChangeRateForced] = useState(false)
     const [forcedChangeRateValue, setForcedChangeRateValue] = useState(changeRate)
-
+    const [sysMessage, setSysMessage] = useState(null)
     const [conversionResult, setConversionResult] = useState(null)
 
-
     const inputAmount = useRef()
-
 
     const swapCurrencies = () => {
         setConvertionDirection(
@@ -47,11 +45,29 @@ export default function Calculator( {changeRate}) {
             return;
         }
 
-        let result = convertionDirection === EUR2USD ? inputAmountValue * changeRate : inputAmountValue / changeRate
+        let usedChangeRate = isChangeRateForced? forcedChangeRateValue : changeRate
+
+        if (isChangeRateForced){
+            const changeRateRatio = Math.abs((forcedChangeRateValue / changeRate) - 1) * 100
+            if (changeRateRatio > 2) {
+                usedChangeRate = changeRate
+            }
+        }
+
+        let result = convertionDirection === EUR2USD ? inputAmountValue * usedChangeRate : inputAmountValue / usedChangeRate
         result = Math.round( result*100) /100
 
+        setSysMessage(null)
         setConversionResult(result )
 
+        if (isChangeRateForced){
+            const changeRateRatio = Math.abs((forcedChangeRateValue / changeRate) - 1) * 100
+            if (changeRateRatio > 2) {
+                setIsChangeRateForced(false)
+                setForcedChangeRateValue(changeRate)
+                setSysMessage('Custom rate is above 2% deviation. Cancelling forced rate.')
+            }
+        }
     }
 
     return (
@@ -83,7 +99,6 @@ export default function Calculator( {changeRate}) {
                     </div>
                 </form>
             </div>
-
             <div>
                 <label>
                     Force custom change rate?
@@ -103,7 +118,13 @@ export default function Calculator( {changeRate}) {
                         onChange={e => handleChangeForcedChangeRate(e)}/>
                 </div>
             </div>
-
+            { sysMessage &&
+                        <div  >
+                            Warning: <span data-testid="system-message">
+                                {sysMessage}
+                            </span>
+                        </div>
+                    }
             <div>
                 {conversionResult &&
                     <div>
