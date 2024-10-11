@@ -4,7 +4,9 @@ export default function Trend({changeRate, evolution}){
 
     return(
         <div>
-            Current change rate : {changeRate} ({evolutionRate>0? '+':''}{evolutionRate}%)
+            <span data-testid="trend-display">
+                {`Current change rate : ${changeRate} (${evolutionRate>0? '+':''}${evolutionRate}%)`}
+            </span>
         </div>
     )
 }

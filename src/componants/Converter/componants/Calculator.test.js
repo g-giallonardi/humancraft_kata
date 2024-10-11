@@ -4,7 +4,7 @@ import expect from "expect";
 
 afterEach(cleanup);
 
-describe('Calculator', () => {
+describe('Calculator functions', () => {
   const changeRate = 1.2;
 
   beforeEach(() => {
