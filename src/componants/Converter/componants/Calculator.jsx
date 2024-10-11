@@ -8,18 +8,37 @@ export default function Calculator( {changeRate}) {
 
     const [convertionDirection, setConvertionDirection] = useState(EUR2USD)
     const [inputAmountValue, setInputAmountValue] = useState(1)
+    const [conversionResult, setConversionResult] = useState(null)
+
+
     const inputAmount = useRef()
 
 
     const swapCurrencies = () => {
-
+        setConvertionDirection(
+            prevDirection => {
+                return prevDirection === EUR2USD ? USD2EUR : EUR2USD;
+            }
+        )
     }
 
     const handleChangeInputAmount = (event) =>{
-
+        event.preventDefault();
+        setInputAmountValue(inputAmount.current.value >= 0 ? inputAmount.current.value : 0 )
+        setConversionResult(null)
     }
 
     const convertCurrencies = event => {
+        event.preventDefault();
+
+        if (!inputAmountValue) {
+            return;
+        }
+
+        let result = convertionDirection === EUR2USD ? inputAmountValue * changeRate : inputAmountValue / changeRate
+        result = Math.round( result*100) /100
+
+        setConversionResult(result )
 
     }
 
@@ -28,10 +47,19 @@ export default function Calculator( {changeRate}) {
             <div>
                 <form onSubmit={convertCurrencies}>
                     <div>
-                        <input data-testid="input-amount" type="number" ref={inputAmount}
-                               onChange={handleChangeInputAmount}/>
-                        <input  data-testid="display-swap-currencies" type="text" disabled value={convertionDirection}/>
-                        <button data-testid="button-swap-currencies" type="button" onClick={swapCurrencies}>Swap currencies</button>
+                        <input data-testid="input-amount"
+                           type="number"
+                           ref={inputAmount}
+                           onChange={handleChangeInputAmount}
+                           value={inputAmountValue}
+                        />
+                        <input data-testid="display-swap-currencies" type="text" disabled value={convertionDirection}/>
+                        <button
+                            data-testid="button-swap-currencies"
+                            type="button"
+                            onClick={swapCurrencies}>
+                            Swap currencies
+                        </button>
                     </div>
                     <div>
                         <button
@@ -42,6 +70,31 @@ export default function Calculator( {changeRate}) {
                         </button>
                     </div>
                 </form>
+            </div>
+
+            <div>
+                {conversionResult &&
+                    <div>
+                        <h4>Result:</h4>
+                        <div>
+                            <span data-testid="result-source-amount-convertion">
+                                {inputAmountValue}
+                            </span>
+                            <span data-testid="result-source-currency">
+                                {convertionDirection === EUR2USD ? CURRENCY_EUR : CURRENCY_USD}
+                            </span>
+                            =
+                        </div>
+                        <div>
+                            <span data-testid="result-target-amount-convertion">
+                                {conversionResult}
+                            </span>
+                            <span data-testid="result-target-currency">
+                                {convertionDirection === EUR2USD ? CURRENCY_USD : CURRENCY_EUR}
+                            </span>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     )
